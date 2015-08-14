@@ -1,12 +1,8 @@
----
-title: 'Reproducible Research: Peer Assessment 1'
-output:
-  html_document:
-    keep_md: yes
----
+# Reproducible Research: Peer Assessment 1
 
 ## Loading and preprocessing the data
-```{r load-data}
+
+```r
 # CSV file was previously extracted from activity.zip
 data <- read.csv("activity.csv", header=TRUE)
 
@@ -15,7 +11,8 @@ data$date = as.Date(data$date)
 ```
 
 ## What is mean total number of steps taken per day?
-``` {r daily-steps-hist}
+
+```r
 library(ggplot2)
 library(reshape2)
 
@@ -29,7 +26,10 @@ s + geom_histogram(binwidth=3000) +
   ylab("Frequency")
 ```
 
-``` {r daily-steps-mean-median}
+![](PA1_template_files/figure-html/daily-steps-hist-1.png) 
+
+
+```r
 # Disable scientific notation
 options(scipen=999)
 
@@ -37,11 +37,12 @@ stepsMean <- mean(dailySteps$steps, na.rm=TRUE)
 stepsMedian <- median(dailySteps$steps, na.rm=TRUE)
 ```
 
-* Mean steps per day: `r stepsMean`
-* Median steps per day: `r stepsMedian`
+* Mean steps per day: 10766.1886792
+* Median steps per day: 10765
 
 ## What is the average daily activity pattern?
-``` {r steps-by-interval}
+
+```r
 intervalSteps <- aggregate(steps ~ interval, data, mean)
 
 s <- ggplot(intervalSteps, aes(interval, steps))
@@ -51,16 +52,29 @@ s + geom_line() +
   ylab("Interval")
 ```
 
-``` {r maximum-steps-interval}
+![](PA1_template_files/figure-html/steps-by-interval-1.png) 
+
+
+```r
 intervalSteps[which.max(intervalSteps$steps), "interval"]
 ```
 
+```
+## [1] 835
+```
+
 ## Imputing missing values
-``` {r missing-values}
+
+```r
 nrow(data[is.na(data$steps),])
 ```
 
-``` {r impute-missing-data}
+```
+## [1] 2304
+```
+
+
+```r
 # Replace missing step values with mean value across all days for the interval
 imputedData <- data
 
@@ -71,7 +85,8 @@ for (i in 1:nrow(imputedData)) {
 }
 ```
 
-``` {r daily-steps-imputed-hist}
+
+```r
 melted <- melt(imputedData, id=c("date"))
 dailySteps <- dcast(melted, date~variable, sum)
 
@@ -82,24 +97,28 @@ s + geom_histogram(binwidth=3000) +
   ylab("Frequency")
 ```
 
-``` {r daily-steps-imputed-mean-median}
-# Disable scientific notation
-options(scipen=999)If your document has figures included (it should) then they should have been placed in the figure/ directory by default (unless you overrided the default). Add and commit the figure/ directory to yoru git repository so that the figures appear in the markdown file when it displays on github.
+![](PA1_template_files/figure-html/daily-steps-imputed-hist-1.png) 
 
+
+```r
+# Disable scientific notation
+options(scipen=999)
 
 stepsMean <- mean(dailySteps$steps, na.rm=TRUE)
 stepsMedian <- median(dailySteps$steps, na.rm=TRUE)
 ```
 
-* Mean steps per day: `r stepsMean`
-* Median steps per day: `r stepsMedian`
+* Mean steps per day: 10766.1886792
+* Median steps per day: 10765
 
 ## Are there differences in activity patterns between weekdays and weekends?
-``` {r weekday-weekend}
+
+```r
 imputedData$weekend <- as.factor(ifelse(weekdays(imputedData$date) %in% c("Saturday", "Sunday"), "Weekend", "Weekday"))
 ```
 
-``` {r steps-by-interval-weekday-weekend}
+
+```r
 intervalSteps <- aggregate(steps ~ interval + weekend, imputedData, mean)
 
 s <- ggplot(intervalSteps, aes(interval, steps))
@@ -109,3 +128,5 @@ s + geom_line() +
   xlab("Steps") +
   ylab("Interval")
 ```
+
+![](PA1_template_files/figure-html/steps-by-interval-weekday-weekend-1.png) 
